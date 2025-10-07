@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import bcrypt from 'bcryptjs'
 import {
     users,
     books,
@@ -42,7 +43,18 @@ const seedDatabase = async () => {
 
         // Insert new data
         console.log('Seeding new data...')
-        await User.insertMany(users)
+
+        // Hash passwords for all users before inserting
+        console.log('Hashing user passwords...')
+        const salt = await bcrypt.genSalt(10)
+        const usersWithHashedPasswords = await Promise.all(
+            users.map(async (user) => ({
+                ...user,
+                passwordHash: await bcrypt.hash('password123', salt), // Default password for all demo users
+            }))
+        )
+
+        await User.insertMany(usersWithHashedPasswords)
         await Book.insertMany(books)
         await Loan.insertMany(loans)
         await Fine.insertMany(fines)

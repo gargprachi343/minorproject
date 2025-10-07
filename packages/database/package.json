@@ -16,10 +16,12 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "bcryptjs": "^3.0.2",
         "dotenv": "^17.2.3",
         "mongoose": "^8.19.1"
     },
     "devDependencies": {
+        "@types/bcryptjs": "^3.0.0",
         "@types/node": "^20.19.9",
         "@workspace/eslint-config": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
