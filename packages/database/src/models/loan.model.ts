@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, models, Model } from 'mongoose'
+import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export interface ILoan extends Document {
     bookId: mongoose.Types.ObjectId
@@ -28,6 +28,6 @@ const loanSchema: Schema<ILoan> = new Schema(
 )
 
 const Loan: Model<ILoan> =
-    models.Loan || mongoose.model<ILoan>('Loan', loanSchema)
+    mongoose.models.Loan || mongoose.model<ILoan>('Loan', loanSchema)
 
 export default Loan

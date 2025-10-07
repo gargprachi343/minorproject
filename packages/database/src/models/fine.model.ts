@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, models, Model } from 'mongoose'
+import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export interface IFine extends Document {
     loanId: mongoose.Types.ObjectId
@@ -22,6 +22,6 @@ const fineSchema: Schema<IFine> = new Schema(
 )
 
 const Fine: Model<IFine> =
-    models.Fine || mongoose.model<IFine>('Fine', fineSchema)
+    mongoose.models.Fine || mongoose.model<IFine>('Fine', fineSchema)
 
 export default Fine

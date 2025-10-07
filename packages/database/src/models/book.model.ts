@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, models, Model } from 'mongoose'
+import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export interface IBook extends Document {
     title: string
@@ -67,6 +67,6 @@ const bookSchema: Schema<IBook> = new Schema(
 )
 
 const Book: Model<IBook> =
-    models.Book || mongoose.model<IBook>('Book', bookSchema)
+    mongoose.models.Book || mongoose.model<IBook>('Book', bookSchema)
 
 export default Book

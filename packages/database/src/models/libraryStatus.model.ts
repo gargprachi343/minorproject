@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, models, Model } from 'mongoose'
+import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export interface ILibraryStatus extends Document {
     totalSeats: number
@@ -15,7 +15,7 @@ const libraryStatusSchema: Schema<ILibraryStatus> = new Schema({
 })
 
 const LibraryStatus: Model<ILibraryStatus> =
-    models.LibraryStatus ||
+    mongoose.models.LibraryStatus ||
     mongoose.model<ILibraryStatus>('LibraryStatus', libraryStatusSchema)
 
 export default LibraryStatus

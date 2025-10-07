@@ -16,6 +16,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "dotenv": "^17.2.3",
         "mongoose": "^8.19.1"
     },
     "devDependencies": {

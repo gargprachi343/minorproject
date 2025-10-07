@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, models, Model } from 'mongoose'
+import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export interface IAttendance extends Document {
     userId: mongoose.Types.ObjectId
@@ -18,7 +18,7 @@ const attendanceSchema: Schema<IAttendance> = new Schema(
 )
 
 const Attendance: Model<IAttendance> =
-    models.Attendance ||
+    mongoose.models.Attendance ||
     mongoose.model<IAttendance>('Attendance', attendanceSchema)
 
 export default Attendance

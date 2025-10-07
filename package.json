@@ -7,6 +7,7 @@
         "dev": "turbo dev",
         "start": "turbo start",
         "lint": "turbo lint",
+        "db:seed": "node --loader ts-node/esm packages/database/src/seed.ts",
         "format": "prettier --write \"**/*.{js,css,json,jsx,ts,tsx,mjs,json,md}\""
     },
     "devDependencies": {
@@ -19,5 +20,8 @@
     "packageManager": "pnpm@10.4.1",
     "engines": {
         "node": ">=20"
+    },
+    "dependencies": {
+        "ts-node": "^10.9.2"
     }
 }
