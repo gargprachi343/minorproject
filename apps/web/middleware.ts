@@ -1,80 +1,56 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import jwt from 'jsonwebtoken'
+import { jwtVerify } from 'jose'
 
-// This function can be marked `async` if using `await` inside
-export function middleware(request: NextRequest) {
-    const path = request.nextUrl.pathname
+const getJwtSecretKey = () => {
+    const secret = process.env.JWT_SECRET
+    if (!secret) {
+        throw new Error('JWT_SECRET is not defined in environment variables')
+    }
+    return new TextEncoder().encode(secret)
+}
 
-    // Define public paths that don't require authentication
+export async function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl
+    const token = request.cookies.get('token')?.value
+
     const isPublicPath =
-        path === '/login' || path === '/register' || path === '/'
+        pathname === '/login' || pathname === '/register' || pathname === '/'
 
-    // Define paths that require authentication
-    const isProtectedPath =
-        path.startsWith('/dashboard') || path.startsWith('/api/dashboard')
-
-    // Get the token from cookies
-    const token = request.cookies.get('token')?.value || ''
-
-    // If user is on a public path and has a token, redirect to dashboard
-    if (isPublicPath && token && path !== '/') {
+    // If the user has a token and is on a public page, redirect to dashboard
+    if (token && isPublicPath) {
         try {
-            // Verify token is valid
-            if (process.env.JWT_SECRET) {
-                jwt.verify(token, process.env.JWT_SECRET)
-                // Token is valid, redirect to dashboard
-                return NextResponse.redirect(
-                    new URL('/dashboard', request.nextUrl)
-                )
-            }
+            await jwtVerify(token, getJwtSecretKey())
+            return NextResponse.redirect(new URL('/dashboard', request.url))
         } catch {
-            // Invalid token, clear it and let them access public path
+            // If token is invalid, let them stay but clear the bad cookie
             const response = NextResponse.next()
             response.cookies.delete('token')
             return response
         }
     }
 
-    // If user is trying to access a protected path without a token, redirect to login
-    if (isProtectedPath && !token) {
-        return NextResponse.redirect(new URL('/login', request.nextUrl))
+    // If the user has no token and is trying to access a protected page, redirect to login
+    if (!token && !isPublicPath) {
+        return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // If user has a token and is accessing a protected path, verify the token
-    if (isProtectedPath && token) {
+    // If the user has a token but it's invalid, redirect to login
+    if (token && !isPublicPath) {
         try {
-            if (!process.env.JWT_SECRET) {
-                throw new Error('JWT_SECRET is not defined')
-            }
-            // Verify the token is valid
-            jwt.verify(token, process.env.JWT_SECRET)
-            // Token is valid, allow access
-            return NextResponse.next()
+            await jwtVerify(token, getJwtSecretKey())
         } catch {
-            // Invalid token, clear it and redirect to login
             const response = NextResponse.redirect(
-                new URL('/login', request.nextUrl)
+                new URL('/login', request.url)
             )
             response.cookies.delete('token')
             return response
         }
     }
 
-    // For all other cases, allow the request to proceed
     return NextResponse.next()
 }
 
-// Configure which paths the middleware should run on
 export const config = {
-    matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * - public folder
-         */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-    ],
+    matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
 }

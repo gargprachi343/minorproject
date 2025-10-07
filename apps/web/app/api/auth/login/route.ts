@@ -1,89 +1,60 @@
-import dbConnect from '@workspace/database/connection'
-import User from '@workspace/database/models/user.model'
 import { NextResponse } from 'next/server'
+import connectToDB from '@workspace/database/connection'
+import User from '@workspace/database/models/user.model'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import { cookies } from 'next/headers'
+import { SignJWT } from 'jose'
+
+const getJwtSecretKey = () => {
+    const secret = process.env.JWT_SECRET
+    if (!secret) {
+        throw new Error('JWT_SECRET is not defined in environment variables')
+    }
+    return new TextEncoder().encode(secret)
+}
 
 export async function POST(request: Request) {
     try {
-        await dbConnect()
+        await connectToDB()
+        const { email, password } = await request.json()
 
-        const { studentId, password } = await request.json()
-
-        if (!studentId || !password) {
+        const user = await User.findOne({ email })
+        if (!user) {
             return NextResponse.json(
-                {
-                    message: 'Student ID and password are required.',
-                },
+                { error: 'Invalid credentials' },
                 { status: 400 }
             )
         }
 
-        const user = await User.findOne({ studentId })
-
-        if (!user) {
+        const isPasswordCorrect = await bcrypt.compare(
+            password,
+            user.passwordHash
+        )
+        if (!isPasswordCorrect) {
             return NextResponse.json(
-                { message: 'Invalid credentials.' },
-                { status: 401 }
+                { error: 'Invalid credentials' },
+                { status: 400 }
             )
         }
 
-        // Compare the provided password with the stored hash
-        const isMatch = await bcrypt.compare(password, user.passwordHash)
+        const token = await new SignJWT({ userId: user._id, role: user.role })
+            .setProtectedHeader({ alg: 'HS256' })
+            .setIssuedAt()
+            .setExpirationTime('1h')
+            .sign(getJwtSecretKey())
 
-        if (!isMatch) {
-            return NextResponse.json(
-                { message: 'Invalid credentials.' },
-                { status: 401 }
-            )
-        }
-
-        // Check if JWT_SECRET is defined
-        if (!process.env.JWT_SECRET) {
-            throw new Error(
-                'JWT_SECRET is not defined in environment variables'
-            )
-        }
-
-        // Create JWT token with user data
-        const tokenData = {
-            id: String(user._id),
-            studentId: user.studentId,
-            name: user.name,
-            email: user.email,
-        }
-
-        const token = jwt.sign(tokenData, process.env.JWT_SECRET, {
-            expiresIn: '1d', // Token expires in 1 day
+        const response = NextResponse.json({ message: 'Login successful' })
+        response.cookies.set('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+            path: '/',
         })
 
-        // Set the token in an HttpOnly cookie for security
-        const cookieStore = await cookies()
-        cookieStore.set('token', token, {
-            httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-            secure: process.env.NODE_ENV !== 'development', // Use HTTPS in production
-            maxAge: 60 * 60 * 24, // 1 day in seconds
-            path: '/', // Cookie is valid for entire site
-            sameSite: 'lax', // Provides CSRF protection
-        })
-
-        return NextResponse.json({
-            success: true,
-            message: 'Login successful',
-            data: {
-                userId: user._id,
-                name: user.name,
-                email: user.email,
-                studentId: user.studentId,
-            },
-        })
+        return response
     } catch (error) {
         console.error(error)
         return NextResponse.json(
-            {
-                message: 'An error occurred during login.',
-            },
+            { error: 'Something went wrong' },
             { status: 500 }
         )
     }

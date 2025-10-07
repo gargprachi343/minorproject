@@ -15,6 +15,7 @@
         "@workspace/database": "workspace:^",
         "@workspace/ui": "workspace:*",
         "bcryptjs": "^3.0.2",
+        "jose": "^6.1.0",
         "jsonwebtoken": "^9.0.2",
         "lucide-react": "^0.475.0",
         "mongoose": "^8.19.1",
