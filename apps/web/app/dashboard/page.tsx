@@ -3,9 +3,57 @@
 import { Button } from '@workspace/ui/components/button'
 import { BookOpen, Users, BookMarked, TrendingUp, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import MyLoansTable from '@/components/MyLoansTable'
+import MyFines from '@/components/MyFines'
+
+interface LibraryStatus {
+  totalSeats: number
+  occupiedSeats: number
+  isOpen: boolean
+}
 
 export default function DashboardPage() {
   const router = useRouter()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [loans, setLoans] = useState<any[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [fines, setFines] = useState<any[]>([])
+  const [libraryStatus, setLibraryStatus] = useState<LibraryStatus | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchData = async () => {
+    try {
+      const [loansRes, finesRes, statusRes] = await Promise.all([
+        fetch('/api/loans/my-loans'),
+        fetch('/api/fines/my-fines'),
+        fetch('/api/library/status'),
+      ])
+
+      if (loansRes.ok) {
+        const loansData = await loansRes.json()
+        setLoans(loansData.data || [])
+      }
+
+      if (finesRes.ok) {
+        const finesData = await finesRes.json()
+        setFines(finesData.data || [])
+      }
+
+      if (statusRes.ok) {
+        const statusData = await statusRes.json()
+        setLibraryStatus(statusData.data)
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -34,10 +82,22 @@ export default function DashboardPage() {
               Library Management
             </h1>
           </div>
-          <Button variant='outline' size='sm' onClick={handleLogout}>
-            <LogOut className='w-4 h-4' />
-            Logout
-          </Button>
+          <div className='flex items-center gap-4'>
+            {libraryStatus && (
+              <div className='hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-lg'>
+                <Users className='w-4 h-4' />
+                <span>
+                  Seats:{' '}
+                  {libraryStatus.totalSeats - libraryStatus.occupiedSeats} /{' '}
+                  {libraryStatus.totalSeats}
+                </span>
+              </div>
+            )}
+            <Button variant='outline' size='sm' onClick={handleLogout}>
+              <LogOut className='w-4 h-4' />
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -99,23 +159,55 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Active Loans Section */}
+        <div className='mb-8'>
+          <h3 className='text-2xl font-bold text-foreground mb-4'>
+            My Active Loans
+          </h3>
+          {loading ? (
+            <div className='text-center py-8 text-muted-foreground'>
+              <p>Loading your loans...</p>
+            </div>
+          ) : (
+            <MyLoansTable loans={loans} onRenewSuccess={fetchData} />
+          )}
+        </div>
+
+        {/* Pending Fines Section */}
+        <div className='mb-8'>
+          <h3 className='text-2xl font-bold text-foreground mb-4'>
+            Fines & Payments
+          </h3>
+          {loading ? (
+            <div className='text-center py-8 text-muted-foreground'>
+              <p>Loading your fines...</p>
+            </div>
+          ) : (
+            <MyFines fines={fines} />
+          )}
+        </div>
+
         {/* Quick Actions */}
         <div className='bg-card border border-border rounded-xl p-6 shadow-lg'>
           <h3 className='text-xl font-bold text-foreground mb-4'>
             Quick Actions
           </h3>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-            <Button variant='outline' className='h-auto py-4 flex-col gap-2'>
+            <Button
+              variant='outline'
+              className='h-auto py-4 flex-col gap-2'
+              onClick={() => router.push('/books')}
+            >
               <BookOpen className='w-6 h-6' />
-              <span>Add New Book</span>
+              <span>Browse Books</span>
             </Button>
             <Button variant='outline' className='h-auto py-4 flex-col gap-2'>
               <Users className='w-6 h-6' />
-              <span>Register Member</span>
+              <span>My Profile</span>
             </Button>
             <Button variant='outline' className='h-auto py-4 flex-col gap-2'>
               <BookMarked className='w-6 h-6' />
-              <span>Issue Book</span>
+              <span>My Wishlist</span>
             </Button>
           </div>
         </div>

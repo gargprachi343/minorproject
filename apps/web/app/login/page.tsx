@@ -140,7 +140,16 @@ export default function LoginPage() {
           </form>
 
           {/* Footer */}
-          <div className='text-center text-sm text-muted-foreground pt-4 border-t border-border'>
+          <div className='text-center text-sm text-muted-foreground pt-4 border-t border-border space-y-2'>
+            <p>
+              Don&apos;t have an account?{' '}
+              <a
+                href='/register'
+                className='text-primary hover:underline font-medium'
+              >
+                Register here
+              </a>
+            </p>
             <p>Need help? Contact your administrator</p>
           </div>
         </div>
