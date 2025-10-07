@@ -1,0 +1,29 @@
+{
+    "name": "@workspace/database",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "./connection": "./dist/connection.js",
+        "./models/*": "./dist/models/*.js"
+    },
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "lint": "eslint . --fix",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "mongoose": "^8.19.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.19.9",
+        "@workspace/eslint-config": "workspace:*",
+        "@workspace/typescript-config": "workspace:*",
+        "eslint": "^9.37.0",
+        "tsup": "^8.5.0",
+        "typescript": "^5.9.3"
+    }
+}
