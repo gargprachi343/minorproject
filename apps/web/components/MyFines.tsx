@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@workspace/ui/components/card'
 import { IFine } from '@workspace/database/models/fine.model'
-import { AlertCircle, DollarSign } from 'lucide-react'
+import { AlertCircle, IndianRupee } from 'lucide-react'
 
 interface FineWithId extends IFine {
   _id: string
@@ -25,7 +25,7 @@ export default function MyFines({ fines }: MyFinesProps) {
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
-            <DollarSign className='w-5 h-5' />
+            <IndianRupee className='w-5 h-5' />
             Pending Fines
           </CardTitle>
           <CardDescription>
@@ -69,7 +69,7 @@ export default function MyFines({ fines }: MyFinesProps) {
               </div>
               <div className='text-right'>
                 <p className='text-lg font-bold text-destructive'>
-                  ${fine.amount.toFixed(2)}
+                  ₹{fine.amount.toFixed(2)}
                 </p>
               </div>
             </div>
@@ -78,7 +78,7 @@ export default function MyFines({ fines }: MyFinesProps) {
             <div className='flex justify-between items-center'>
               <p className='text-lg font-semibold'>Total Amount Due</p>
               <p className='text-2xl font-bold text-destructive'>
-                ${totalAmount.toFixed(2)}
+                ₹{totalAmount.toFixed(2)}
               </p>
             </div>
           </div>

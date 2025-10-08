@@ -17,7 +17,7 @@ export async function GET() {
     try {
         const cookieStore = await cookies()
         const token = cookieStore.get('token')?.value
-        
+
         if (!token) {
             return NextResponse.json(
                 { message: 'Not authenticated' },
@@ -79,7 +79,10 @@ export async function GET() {
             console.error('Error stack:', error.stack)
         }
         return NextResponse.json(
-            { message: 'An error occurred', error: error instanceof Error ? error.message : 'Unknown error' },
+            {
+                message: 'An error occurred',
+                error: error instanceof Error ? error.message : 'Unknown error',
+            },
             { status: 500 }
         )
     }

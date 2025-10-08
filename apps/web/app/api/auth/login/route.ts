@@ -36,12 +36,12 @@ export async function POST(request: Request) {
         //     )
         // }
 
-        const token = await new SignJWT({ 
-            id: String(user._id), 
+        const token = await new SignJWT({
+            id: String(user._id),
             studentId: user.studentId,
             name: user.name,
             email: user.email,
-            role: user.role 
+            role: user.role,
         })
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
