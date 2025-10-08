@@ -55,6 +55,7 @@ export async function GET() {
                 studentId: user.studentId,
                 name: user.name,
                 email: user.email,
+                role: user.role,
                 wishlist: user.wishlist,
                 completedBooks: user.completedBooks,
             },

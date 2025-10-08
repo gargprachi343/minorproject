@@ -53,8 +53,9 @@ export const books = [
         title: 'Dune',
         author: ['Frank Herbert'],
         summary:
-            'Follows the adventures of Paul Atreides, heir to a noble family.',
-        coverImage: '/covers/dune.jpg',
+            'Follows the adventures of Paul Atreides, heir to a noble family on the desert planet Arrakis.',
+        coverImage:
+            'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1555447414l/44767458.jpg',
         genre: ['Science Fiction'],
         publicationYear: 1965,
         type: 'PHYSICAL',
@@ -72,8 +73,9 @@ export const books = [
         title: 'The Hobbit',
         author: ['J.R.R. Tolkien'],
         summary:
-            'The prelude to The Lord of the Rings, following Bilbo Baggins.',
-        coverImage: '/covers/hobbit.jpg',
+            'The prelude to The Lord of the Rings, following the adventures of Bilbo Baggins.',
+        coverImage:
+            'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1546071216l/5907.jpg',
         genre: ['Fantasy'],
         publicationYear: 1937,
         type: 'PHYSICAL',
@@ -85,12 +87,12 @@ export const books = [
         author: ['Stanley B. Lippman', 'Josée Lajoie'],
         summary:
             'The definitive guide to modern C++ for new and experienced programmers.',
-        coverImage: '/covers/cpp.jpg',
+        coverImage: 'https://m.media-amazon.com/images/I/61f+mezprVL.jpg',
         genre: ['Programming', 'Textbook'],
         publicationYear: 2012,
         type: 'DIGITAL',
         status: 'AVAILABLE',
-        fileUrl: '/ebooks/cpp_primer.epub',
+        fileUrl: '#',
         format: 'EPUB',
     },
     {
@@ -98,26 +100,35 @@ export const books = [
         title: 'Python for Data Analysis',
         author: ['Wes McKinney'],
         summary:
-            'A practical guide to data manipulation with pandas, NumPy, and IPython.',
-        coverImage: '/covers/data.jpg',
-        genre: ['Data Science', 'Programming'],
+            'Learn to manipulate, process, clean, and crunch datasets in Python.',
+        coverImage:
+            'https://m.media-amazon.com/images/I/8125MPZTgbL._UF1000,1000_QL80_.jpg',
+        genre: ['Programming', 'Data Science'],
         publicationYear: 2017,
         type: 'DIGITAL',
         status: 'AVAILABLE',
-        fileUrl: '/ebooks/python_data.pdf',
+        fileUrl: '#',
         format: 'PDF',
+        ratings: [
+            {
+                userId: tithiID,
+                rating: 4,
+                review: 'Excellent resource for data analysis, highly recommend!',
+            },
+        ],
     },
     {
         _id: nineteen84Id,
         title: '1984',
         author: ['George Orwell'],
         summary:
-            'A dystopian novel set in Airstrip One, a province of the superstate Oceania.',
-        coverImage: '/covers/1984.jpg',
-        genre: ['Dystopian', 'Classic'],
+            'A dystopian novel set in a totalitarian society ruled by the Party and Big Brother.',
+        coverImage:
+            'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1657781256l/61439040.jpg',
+        genre: ['Fiction', 'Dystopian'],
         publicationYear: 1949,
         type: 'PHYSICAL',
-        status: 'CHECKED_OUT', // Checked out by Tithi (and is overdue)
+        status: 'CHECKED_OUT', // Checked out by Tithi
     },
 ]
 

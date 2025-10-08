@@ -1,11 +1,19 @@
 'use client'
 
 import { Button } from '@workspace/ui/components/button'
-import { BookOpen, Users, BookMarked, TrendingUp, LogOut } from 'lucide-react'
+import {
+  BookOpen,
+  Users,
+  BookMarked,
+  TrendingUp,
+  LogOut,
+  AlertCircle,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import MyLoansTable from '@/components/MyLoansTable'
 import MyFines from '@/components/MyFines'
+import { toast } from 'sonner'
 
 interface LibraryStatus {
   totalSeats: number
@@ -13,8 +21,21 @@ interface LibraryStatus {
   isOpen: boolean
 }
 
+interface User {
+  name: string
+}
+
+interface Stats {
+  totalBooks: number
+  totalMembers: number
+  borrowedBooks: number
+  pendingFines: number
+}
+
 export default function DashboardPage() {
   const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [loans, setLoans] = useState<any[]>([])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,7 +44,19 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   const fetchData = async () => {
+    setLoading(true)
     try {
+      // Fetch from the single dashboard endpoint first
+      const dashboardRes = await fetch('/api/dashboard')
+      if (dashboardRes.ok) {
+        const dashboardData = await dashboardRes.json()
+        setUser(dashboardData.data.user)
+        setStats(dashboardData.data.stats)
+      } else {
+        throw new Error('Failed to fetch dashboard stats')
+      }
+
+      // Fetch loans, fines, and status in parallel
       const [loansRes, finesRes, statusRes] = await Promise.all([
         fetch('/api/loans/my-loans'),
         fetch('/api/fines/my-fines'),
@@ -46,6 +79,7 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
+      toast.error('Failed to load dashboard data.')
     } finally {
       setLoading(false)
     }
@@ -105,7 +139,7 @@ export default function DashboardPage() {
       <main className='container mx-auto px-4 py-8'>
         <div className='mb-8'>
           <h2 className='text-3xl font-bold text-foreground mb-2'>
-            Welcome to Your Dashboard
+            Welcome back{user ? `, ${user.name}` : ''}!
           </h2>
           <p className='text-muted-foreground'>
             Manage your library operations from here
@@ -121,7 +155,9 @@ export default function DashboardPage() {
               </div>
               <TrendingUp className='w-5 h-5 text-green-600' />
             </div>
-            <h3 className='text-2xl font-bold text-foreground mb-1'>1,234</h3>
+            <h3 className='text-2xl font-bold text-foreground mb-1'>
+              {stats?.totalBooks ?? 0}
+            </h3>
             <p className='text-muted-foreground text-sm'>Total Books</p>
           </div>
 
@@ -132,7 +168,9 @@ export default function DashboardPage() {
               </div>
               <TrendingUp className='w-5 h-5 text-green-600' />
             </div>
-            <h3 className='text-2xl font-bold text-foreground mb-1'>456</h3>
+            <h3 className='text-2xl font-bold text-foreground mb-1'>
+              {stats?.totalMembers ?? 0}
+            </h3>
             <p className='text-muted-foreground text-sm'>Active Members</p>
           </div>
 
@@ -143,19 +181,22 @@ export default function DashboardPage() {
               </div>
               <TrendingUp className='w-5 h-5 text-green-600' />
             </div>
-            <h3 className='text-2xl font-bold text-foreground mb-1'>89</h3>
+            <h3 className='text-2xl font-bold text-foreground mb-1'>
+              {stats?.borrowedBooks ?? 0}
+            </h3>
             <p className='text-muted-foreground text-sm'>Books Borrowed</p>
           </div>
 
           <div className='bg-card border border-border rounded-xl p-6 shadow-lg'>
             <div className='flex items-center justify-between mb-4'>
-              <div className='inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg'>
-                <TrendingUp className='w-6 h-6' />
+              <div className='inline-flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg'>
+                <BookMarked className='w-6 h-6' />
               </div>
-              <TrendingUp className='w-5 h-5 text-green-600' />
             </div>
-            <h3 className='text-2xl font-bold text-foreground mb-1'>98%</h3>
-            <p className='text-muted-foreground text-sm'>Return Rate</p>
+            <h3 className='text-2xl font-bold text-foreground mb-1'>
+              {stats?.pendingFines ?? 0}
+            </h3>
+            <p className='text-muted-foreground text-sm'>Pending Fines</p>
           </div>
         </div>
 
@@ -201,11 +242,19 @@ export default function DashboardPage() {
               <BookOpen className='w-6 h-6' />
               <span>Browse Books</span>
             </Button>
-            <Button variant='outline' className='h-auto py-4 flex-col gap-2'>
+            <Button
+              variant='outline'
+              className='h-auto py-4 flex-col gap-2'
+              onClick={() => router.push('/profile')}
+            >
               <Users className='w-6 h-6' />
               <span>My Profile</span>
             </Button>
-            <Button variant='outline' className='h-auto py-4 flex-col gap-2'>
+            <Button
+              variant='outline'
+              className='h-auto py-4 flex-col gap-2'
+              onClick={() => router.push('/wishlist')}
+            >
               <BookMarked className='w-6 h-6' />
               <span>My Wishlist</span>
             </Button>
