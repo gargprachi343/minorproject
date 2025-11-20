@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@workspace/ui/components/button'
 import { Badge } from '@workspace/ui/components/badge'
+import { Input } from '@workspace/ui/components/input'
+import { Label } from '@workspace/ui/components/label'
 import {
   Card,
   CardContent,
@@ -41,6 +43,11 @@ interface Book {
     rating: number
     review?: string
   }>
+  currentLoan?: {
+    borrowerName: string
+    dueDate: string
+    status: string
+  }
 }
 
 export default function BookDetailPage() {
@@ -52,6 +59,8 @@ export default function BookDetailPage() {
   const [loading, setLoading] = useState(true)
   const [isInWishlist, setIsInWishlist] = useState(false)
   const [wishlistLoading, setWishlistLoading] = useState(false)
+  const [showReserveModal, setShowReserveModal] = useState(false)
+  const [reservationDays, setReservationDays] = useState(14)
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -119,9 +128,36 @@ export default function BookDetailPage() {
     }
   }
 
-  const handleReserve = async () => {
-    // Placeholder for reserve functionality
-    console.log('Reserve book clicked')
+  const handleReserveClick = () => {
+    setShowReserveModal(true)
+  }
+
+  const confirmReserve = async () => {
+    try {
+      const response = await fetch('/api/books/reserve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ bookId, duration: reservationDays }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        toast.success(data.message)
+        // Update local book state
+        if (book && book.type === 'PHYSICAL') {
+          setBook({ ...book, status: 'RESERVED' })
+        }
+        setShowReserveModal(false)
+      } else {
+        const error = await response.json()
+        toast.error(error.message || 'Failed to reserve book')
+      }
+    } catch (error) {
+      console.error('Error reserving book:', error)
+      toast.error('An error occurred')
+    }
   }
 
   if (loading) {
@@ -183,15 +219,13 @@ export default function BookDetailPage() {
                 <div className='space-y-3'>
                   <Button
                     className='w-full'
-                    disabled={book.status !== 'AVAILABLE'}
-                    onClick={handleReserve}
+                    disabled={book.status !== 'AVAILABLE' && book.type === 'PHYSICAL'}
+                    onClick={handleReserveClick}
                   >
                     <BookMarked className='w-4 h-4 mr-2' />
-                    {book.status === 'AVAILABLE'
-                      ? 'Reserve Book'
-                      : book.status === 'CHECKED_OUT'
-                        ? 'Checked Out'
-                        : 'Reserved'}
+                    {book.type === 'PHYSICAL' 
+                      ? (book.status === 'AVAILABLE' ? 'Reserve Book' : book.status === 'CHECKED_OUT' ? 'Checked Out' : 'Reserved')
+                      : 'Get Digital Copy'}
                   </Button>
 
                   <Button
@@ -210,6 +244,22 @@ export default function BookDetailPage() {
                         : 'Add to Wishlist'}
                   </Button>
                 </div>
+
+                {/* Current Loan Info */}
+                {book.currentLoan && (
+                  <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border text-sm space-y-2">
+                    <div className="font-medium flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      <span>Rented by: {book.currentLoan.borrowerName}</span>
+                    </div>
+                    <div className="text-muted-foreground flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        Expected Release: {new Date(book.currentLoan.dueDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Book Info Cards */}
                 <div className='mt-6 space-y-3'>
@@ -338,6 +388,48 @@ export default function BookDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* Reservation Modal */}
+      {showReserveModal && book && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <CardTitle>Confirm Reservation</CardTitle>
+              <CardDescription>
+                {book.type === 'PHYSICAL' 
+                  ? 'Select how long you want to reserve this book.' 
+                  : 'Select how long you want access to this digital book.'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duration (Days)</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  min="1"
+                  max={book.type === 'PHYSICAL' ? "14" : "365"}
+                  value={reservationDays}
+                  onChange={(e) => setReservationDays(parseInt(e.target.value))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {book.type === 'PHYSICAL' 
+                    ? 'Maximum 14 days. 5 Rs/day fine after due date.' 
+                    : 'You can access this book for the selected duration.'}
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowReserveModal(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={confirmReserve}>
+                  Confirm Reservation
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

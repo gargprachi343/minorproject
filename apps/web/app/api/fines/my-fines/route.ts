@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 import dbConnect from '@workspace/database/connection'
 import Fine from '@workspace/database/models/fine.model'
+import { calculateFines } from '@/lib/fines'
 
 interface JWTPayload {
     id: string
@@ -36,6 +37,9 @@ export async function GET() {
 
         // Connect to database
         await dbConnect()
+
+        // Calculate fines
+        await calculateFines(decoded.id)
 
         // Fetch pending fines for this user
         const fines = await Fine.find({

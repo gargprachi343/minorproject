@@ -114,7 +114,11 @@ export default function MyLoansTable({
               <TableCell>
                 <Badge
                   variant={
-                    loan.status === 'OVERDUE' ? 'destructive' : 'default'
+                    loan.status === 'OVERDUE'
+                      ? 'destructive'
+                      : loan.status === 'RESERVED'
+                        ? 'secondary'
+                        : 'default'
                   }
                 >
                   {loan.status}
@@ -126,7 +130,9 @@ export default function MyLoansTable({
                   variant='outline'
                   onClick={() => handleRenew(loan._id)}
                   disabled={
-                    loan.status === 'OVERDUE' || renewingLoan === loan._id
+                    loan.status === 'OVERDUE' ||
+                    loan.status === 'RESERVED' ||
+                    renewingLoan === loan._id
                   }
                 >
                   <RefreshCw className='w-4 h-4 mr-2' />

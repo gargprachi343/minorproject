@@ -6,7 +6,7 @@ export interface ILoan extends Document {
     checkoutDate: Date
     dueDate: Date
     returnDate?: Date
-    status: 'ACTIVE' | 'RETURNED' | 'OVERDUE'
+    status: 'ACTIVE' | 'RETURNED' | 'OVERDUE' | 'RESERVED'
 }
 
 const loanSchema: Schema<ILoan> = new Schema(
@@ -18,7 +18,7 @@ const loanSchema: Schema<ILoan> = new Schema(
         returnDate: { type: Date },
         status: {
             type: String,
-            enum: ['ACTIVE', 'RETURNED', 'OVERDUE'],
+            enum: ['ACTIVE', 'RETURNED', 'OVERDUE', 'RESERVED'],
             required: true,
         },
     },

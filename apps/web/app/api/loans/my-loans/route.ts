@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 import dbConnect from '@workspace/database/connection'
 import Loan from '@workspace/database/models/loan.model'
+import { calculateFines } from '@/lib/fines'
 
 interface JWTPayload {
     id: string
@@ -37,10 +38,13 @@ export async function GET() {
         // Connect to database
         await dbConnect()
 
-        // Fetch active and overdue loans for this user with populated book details
+        // Calculate fines and update statuses
+        await calculateFines(decoded.id)
+
+        // Fetch active, overdue, and reserved loans for this user with populated book details
         const loans = await Loan.find({
             userId: decoded.id,
-            status: { $in: ['ACTIVE', 'OVERDUE'] },
+            status: { $in: ['ACTIVE', 'OVERDUE', 'RESERVED'] },
         })
             .populate('bookId')
             .sort({ dueDate: 1 }) // Sort by due date (earliest first)
